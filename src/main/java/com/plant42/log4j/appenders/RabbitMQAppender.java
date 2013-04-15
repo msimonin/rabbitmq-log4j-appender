@@ -404,6 +404,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
                     .correlationId(id)
                     .contentType("text/json");
 
+            createConnection();
             createChannel().basicPublish(exchange, routingKey, b.build(), payload.toString().getBytes());
 
             return loggingEvent;
