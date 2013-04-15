@@ -75,10 +75,12 @@ public class RabbitMQAppender extends AppenderSkeleton {
      * Creates the connection, channel to RabbitMQ. Declares exchange and queue
      * @see AppenderSkeleton
      */
+    /* (non-Javadoc)
+     * @see org.apache.log4j.AppenderSkeleton#activateOptions()
+     */
     @Override
     public void activateOptions() {
         super.activateOptions();
-
         //== creating connection
         try {
             this.createConnection();
@@ -108,6 +110,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
         }
     }
 
+    
     /**
      * Sets the ConnectionFactory parameters
      */
@@ -323,8 +326,10 @@ public class RabbitMQAppender extends AppenderSkeleton {
      * @throws IOException
      */
     private Channel createChannel() throws IOException {
-        if (this.channel == null || !this.channel.isOpen() && (this.connection != null && this.connection.isOpen()) ) {
-            this.channel = this.connection.createChannel();
+        if (this.connection != null) {
+            if (this.channel == null || !this.channel.isOpen() && (this.connection != null && this.connection.isOpen()) ) {
+                this.channel = this.connection.createChannel();
+            }
         }
         return this.channel;
     }
@@ -403,9 +408,10 @@ public class RabbitMQAppender extends AppenderSkeleton {
                     .type(loggingEvent.getLevel().toString())
                     .correlationId(id)
                     .contentType("text/json");
-
-            createConnection();
-            createChannel().basicPublish(exchange, routingKey, b.build(), payload.toString().getBytes());
+                   activateOptions();
+                if (channel != null && channel.isOpen()) {
+                    channel.basicPublish(exchange, routingKey, b.build(), payload.toString().getBytes());
+                }
 
             return loggingEvent;
         }
